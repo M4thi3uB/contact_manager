@@ -29,16 +29,19 @@ $app->get('/home', function (Request $request, Response $response, array $args) 
 });
 
 $app->get('/index/twig', function (Request $request, Response $response, array $args) use ($container) {
-    $capsule = new Capsule;
+
     return $container->get('twig_view')->render($response, 'index.twig', $args);
 });
 
 //Route IndexController
 $app->get('/index', '\App\Controllers\IndexController:index');
+$app->get('/index/', '\App\Controllers\IndexController:checkAuth');
+
+//Contact
 
 //Route ContactsController -> all_contacts
-$app->get('/contact', '\App\Controllers\ContactsController:listContact');
-$app->get('/contact/all', '\App\Controllers\ContactsController:all_contacts');
+$app->get('/contact', '\App\Controllers\ContactsController:addContact');
+$app->get('/contact/all', '\App\Controllers\ContactsController:allData');
 
 //$app->get('/contact', '\App\Controllers\ContactsController:all_contacts');
 

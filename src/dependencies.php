@@ -1,9 +1,11 @@
 <?php
 
+use App\Controllers\SystemController;
 use Slim\App;
-use App\Models\Contact;
+
 use App\Models\ContactEdit;
 use App\Controllers\Controller;
+use Slim\App\Models\WidgetController;
 
 //return function (App $app) {
 $container = $app->getContainer();
@@ -52,19 +54,15 @@ $container['pdo'] = function ($c) {
         $settings = $c->get('settings')['db_contacts'];
         $dsn = 'mysql:host=' . $settings['host'] . ';dbname=' . $settings['database'];
         $pdo = new PDO($dsn, $settings['username'], $settings['password']);
-        //$pdo = new PDO('mysql:host=localhost;dbname=contact_manager', 'root', '');
-//        foreach ($pdo->query('SELECT * FROM contacts') as $item) {
-//            print_r($item);
-//        }
+
         //PDO::ATTR_ERRMODE : rapport d'erreurs.
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        return $pdo;
-        //$pdo = new PDO('mysql:host=localhost;dbname=contact_manager', 'root', '');
-//        $contacts_result = $pdo->query('SELECT * FROM contacts')->fetchAll(PDO::FETCH_OBJ);
 
-//        return $pdo;
+        return $pdo;
+
     } catch (PDOException $e) {
+
         print 'Erreur : ' . $e->getMessage() . '<br>';
         die();
     }
@@ -72,15 +70,19 @@ $container['pdo'] = function ($c) {
 
 //ORM Eloquent Configuration
 //$container['db_contacts'] = function ($container) {
-$capsule = new Illuminate\Database\Capsule\Manager;
-$capsule->addConnection($container['settings']['db_contacts'], 'contact_manager');
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
+//$capsule = new Illuminate\Database\Capsule\Manager;
+//$capsule->addConnection($container['settings']['db_contacts'], 'contact_manager');
+//$capsule->setAsGlobal();
+//$capsule->bootEloquent();
 //return $capsule;
 
 //};
+$container['orm'] = function ($container) {
+    $capsule = new Illuminate\Database\Capsule\Manager;
+    $capsule->addConnection($container['settings']['db_contacts'], 'contact_manager');
+    $capsule->setAsGlobal();
+    $capsule->bootEloquent();
 
-$container['orm'] = function ($container) use ($capsule) {
     return $capsule;
 };
 
@@ -97,8 +99,7 @@ $container[''] = function ($c) {
 // -----------------------------------------------------------------------------
 $container['cfgModel'] = function ($container) {
     $settings = $container->get('settings');
-    $cfgModel = new App\Models\Contact($container->get('pdo'));
-    return $cfgModel;
+    return new App\Models\Contact($container->get('pdo'));
 };
 
 
@@ -109,5 +110,13 @@ $container['cfgModel'] = function ($container) {
 $container[Controller::class] = function ($container) {
     $view = $container->get('view');
     $logger = $container->get('logger');
-    return new App\Controllers\Controller($view, $logger);
+    return new Controller($view, $logger);
+};
+
+$container[SystemController::class] = function ($container) {
+    $logger = $container->get('logger');
+    $cfgModel = $container->get('cfgModel');
+    // $cfgModel = $container->get('cfgModelFPDO');
+    // $cfgModel = $container->get('cfgModelMock');
+    return new SystemController($logger, $cfgModel);
 };

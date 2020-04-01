@@ -13,9 +13,9 @@ use PDO;
 use PDOException;
 use Psr\Log\LoggerInterface;
 use Slim\App;
+use Slim\App\Models\Contact;
 use Slim\Psr7\Request as Request;
 use Slim\Psr7\Response as Response;
-use App\Models\Contact;
 use Slim\Views\Twig;
 
 class ContactsController extends Controller
@@ -27,39 +27,43 @@ class ContactsController extends Controller
 //        return $view->render($response, 'home.twig');
 //    }
 //
-    public function all_contacts()
+    public function allData()
     {
         try {
-            $pdo = $this->container->pdo;
-            $sql = 'SELECT * FROM contacts';
-            foreach ($pdo->query($sql) as $item) {
-                print_r($item);
-            }
+//            $pdo = $this->container->pdo;
+//            //$orm = $this->container->orm;
+//            $sql = 'SELECT * FROM contacts';
+//            foreach ($pdo->query($sql) as $item) {
+//                print_r($item);
+//            }
+            $this->__get('logger')->info("Entrée Page index.twig");
+            $query = $this->getAllData('SELECT * FROM contacts');
+            //var_dump($query);
+            $this->__get('logger')->info('allData Ok!.');
 
-            //var_dump($pdo);
         } catch (PDOException $e) {
-
             print 'Erreur !: ' . $e->getMessage() . '<br/>';
             die();
         }
     }
 
-    public function listContact()
+    public function addContact()
     {
 
-        $contacts = Contact::all();
+        $setData = $this->setData("INSERT INTO contacts (nom, prenom, email) 
+                                           VALUES ('Chazel','Marianne','bernard@morin.fr')");
+        var_dump($setData);
 
-        foreach ($contacts as $contact) {
-            $nom = $contact->nom;
-            var_dump($nom);
-        }
+        $this->__get('logger')->info('addContact OK!.');
 
     }
 
-    public function findOne()
+    public function findOne($query)
     {
-        $contact = Contact::find(1);
-        return $contact->toJson(JSON_PRETTY_PRIT);
+        $getData = $this->getData($query);
+        var_dump($getData);
+
+        $this->__get('logger')->info('findOne : OK!');
     }
 
 }
